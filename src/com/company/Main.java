@@ -19,10 +19,12 @@ import java.util.Scanner;
  * // <Array> ::= <Json> <JTail>
  * // <JTail> ::= , <Array> | ε
  *
- * эта грамматика готова
+ * // <Json> ::= { <Map> } | NUMBER | STRING | [ ] | { }
+ * // <Map> ::= <Pair> <MTail>
+ * // <Pair> ::= STRING : <Json>
+ * // <MTail> ::= , <Map> | ε
  *
- * осталось дело за словарями
- *
+ * ГОТОВО
  */
 
 
@@ -75,8 +77,11 @@ public class Main {
         } else if (sym.matches(Tag.L_CURLY_BRACKET)) {
             sym = sym.next();
             expect(Tag.R_CURLY_BRACKET);
-            sym = sym.next();
             System.out.println("<Json> ::= { }");
+        } else if (sym.matches(Tag.MAP)) {
+            System.out.println("<Json> ::= { <Map> }");
+            parseMap();
+            expect(Tag.R_CURLY_BRACKET);
         } else {
             sym.throwError("identifier, number or string expected");
         }
@@ -101,14 +106,52 @@ public class Main {
             sym.throwError("Json or J_Tail expected");
         }
     }
+
+    private static void parseMap() throws SyntaxError {
+        if (sym.matches(Tag.MAP) || sym.matches(Tag.COLON)) {
+            System.out.println("<Map> ::= <Pair> <MTail>");
+            sym = sym.next();
+            parsePair();
+            parseM_Tail();
+        } else {
+            sym.throwError("Pair or MTail expected");
+        }
+    }
+
+    private static void parsePair() throws SyntaxError {
+        if (sym.matches(Tag.COLON) || sym.matches(Tag.STRING)) {
+            System.out.println("<Pair> ::= STRING : <Json>");
+            sym = sym.next();
+            expect(Tag.COLON);
+            parseJson();
+        } else {
+            System.out.println("String or comma or Json expected");
+        }
+    }
+
+    private static void parseM_Tail() throws SyntaxError {
+        if (sym.matches(Tag.MAP) || sym.matches(Tag.COMMA)) {
+            System.out.println("<MTail> ::= , <Map> | ε");
+            parseMap();
+        } else {
+            System.out.println("<MTail> ::= ε");
+        }
+    }
+
+
 }
 
 
 /*
 Пример
-{ "alpha": 1,
-"beta": [10, "10", {}],
-"gamma": { "x": [] }
+{ "alpha" : 1 ,
+"beta" : [ 10 , rar , { } ] ,
+"gamma" : { "x" : [ ] }
 }
 [ rrr , [ 10 ] , 456789 ]
+[ ggg , [ 0 ] ]
+{ "a" : 1 }
+{ "beta" : [ 10 , rar , { } ] }
+{ "gamma" : { "x" : [ ] } }
+
  */

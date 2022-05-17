@@ -65,6 +65,8 @@ enum Tag {
     R_CURLY_BRACKET,
     J_TAIL,
     COMMA,
+    MAP,
+    COLON,
     ;
 
     public String toString() {
@@ -79,6 +81,8 @@ enum Tag {
             case R_CURLY_BRACKET: return "'}'";
             case J_TAIL: return "part_array";
             case COMMA: return "','";
+            case MAP: return "'map'";
+            case COLON: return "':'";
             case END_OF_TEXT: return "end of text";
         }
         throw new RuntimeException("unreachable code");

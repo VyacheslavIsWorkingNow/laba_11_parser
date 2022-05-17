@@ -21,7 +21,8 @@ class Token {
             case '[':
                 tag = Tag.L_SQUARE;
                 follow = follow.skip();
-                if (follow.satisfies(Character::isLetterOrDigit) || follow.getChar() == '[') {
+                if (follow.satisfies(Character::isLetterOrDigit) || follow.getChar() == '['
+                        || follow.getChar() == '{' || follow.getChar() == '"') {
                     tag = Tag.ARRAY;
                 }
                 break;
@@ -30,15 +31,27 @@ class Token {
                 break;
             case '{':
                 tag = Tag.L_CURLY_BRACKET;
+                follow = follow.skip();
+                if (follow.satisfies(Character::isLetterOrDigit) || follow.getChar() == '['
+                        || follow.getChar() == '{' || follow.getChar() == '"') {
+                    tag = Tag.MAP;
+                }
                 break;
             case '}':
                 tag = Tag.R_CURLY_BRACKET;
                 break;
             case ',':
                 tag = Tag.COMMA;
-                follow = follow.skip();
                 if (follow.satisfies(Character::isLetterOrDigit)) {
                     tag = Tag.ARRAY;
+                }
+                follow = follow.skipWhile(Character::isWhitespace);
+                if (follow.getChar() == '"') {
+                    tag = Tag.MAP;
+                    follow = follow.skipWhile(Character::isWhitespace);
+                    if (follow.satisfies(Character::isDigit)) {
+                        tag = Tag.STRING;
+                    }
                 }
                 break;
             case '"':
@@ -48,6 +61,9 @@ class Token {
                 }
                 follow = follow.skip();
                 tag = Tag.STRING;
+                break;
+            case ':':
+                tag = Tag.COLON;
                 break;
             default:
                 if (start.satisfies(Character::isLetter)) {
